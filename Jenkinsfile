@@ -1,10 +1,13 @@
 pipeline {
     agent {label 'agent1'}
-    
+    options {
+        skipDefaultCheckout(true)
+    }
     stages {
         stage('Build') { 
             steps {
                 cleanWs()
+                checkout scm
                 script {
                     sh """
                     python3 -m venv todo-app-venv
