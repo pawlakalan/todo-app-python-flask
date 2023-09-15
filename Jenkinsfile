@@ -4,13 +4,13 @@ pipeline {
     stages {
         stage('Build') { 
             steps {
+                cleanWs()
                 script {
                     sh """
                     python3 -m venv todo-app-venv
                     . todo-app-venv/bin/activate
                     pip3 install -r requirements.txt
                     """
-                    sh 'ls'
                 }
             }
         }
@@ -44,10 +44,18 @@ pipeline {
                     withCredentials([string(credentialsId: 'render-token', variable: 'RENDER_TOKEN')]) {
                         httpRequest "https://api.render.com/deploy/${RENDER_TOKEN}&imgURL=docker.io%2Fpawlakalan%2Ftodo-app-python-flask%3Alatest"
                     }
-                    echo 'Deployment'
                 }
             }
         }
     }
-    
+    post {
+        always {
+            cleanWs(cleanWhenNotBuilt: false,
+                    deleteDirs: true,
+                    disableDeferredWipeout: true,
+                    notFailBuild: true,
+                    patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+                               [pattern: '.propsfile', type: 'EXCLUDE']])
+        }
+    }
 }
